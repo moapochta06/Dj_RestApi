@@ -9,15 +9,6 @@ from .serializers import SnippetSerializer, UserSerializer
 from .permissions import IsOwnerOrReadOnly
 
 
-@api_view(['GET'])
-def api_root(request, format=None):
-    """
-    Provides a root endpoint for the API that links to user and snippet lists.
-    """
-    return Response({
-        'users': reverse('user-list', request=request, format=format),
-        'snippets': reverse('snippet-list', request=request, format=format)
-    })
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
