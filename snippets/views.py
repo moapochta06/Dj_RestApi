@@ -6,7 +6,7 @@ from rest_framework.reverse import reverse
 
 from .models import Snippet
 from .serializers import SnippetSerializer, UserSerializer
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly,IsModeratorOrOwner
 
 
 
@@ -18,7 +18,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-
+    
 class SnippetViewSet(viewsets.ModelViewSet):
     """
     This viewset automatically provides `list`, `create`, `retrieve`,
@@ -28,8 +28,13 @@ class SnippetViewSet(viewsets.ModelViewSet):
     """
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+            self.permission_classes = [IsModeratorOrOwner]  # Модераторы и владельцы могут изменять
+        else:
+            self.permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Все могут читать
+        return super().get_permissions()
 
     @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
     def highlight(self, request, *args, **kwargs):
